@@ -2617,10 +2617,11 @@ class ConfigurationsNexxim(Configurations, PyAedtBase):
                         if i in new_comp_params and j != new_comp_params and j != f'"{new_comp_params}"'
                     }
                     if "buffer" in params:
-                        prop_value = params.pop("buffer")
+                        prop_value = params["buffer"]
                         if prop_value:
                             new_comp.parameters["buffer"] = prop_value
-                    if params:
+                    multiple_property_update = False
+                    if params and not "buffer" in params:
                         try:
                             values = [
                                 i[1:-1] if isinstance(i, str) and i.startswith('"') and is_number(i[1:-1]) else i
@@ -2633,16 +2634,18 @@ class ConfigurationsNexxim(Configurations, PyAedtBase):
                                 list(params.keys()),
                                 values,
                             )
+                            multiple_property_update = True
                         except Exception:  # pragma: no cover
                             self._app.logger.warning(
                                 f"Failed to set one of the properties for component {new_comp.composed_name}"
                             )
-                            for ppn, ppv in params.items():
-                                new_comp.parameters[ppn] = (
-                                    ppv[1:-1]
-                                    if isinstance(ppv, str) and ppv.startswith('"') and is_number(ppv[1:-1])
-                                    else ppv
-                                )
+                    if not multiple_property_update:
+                        for ppn, ppv in params.items():
+                            new_comp.parameters[ppn] = (
+                                ppv[1:-1]
+                                if isinstance(ppv, str) and ppv.startswith('"') and is_number(ppv[1:-1])
+                                else ppv
+                            )
                     if "buffer" in params:
                         self._hide_circuit_ibis(params, new_comp)
 
