@@ -2616,6 +2616,10 @@ class ConfigurationsNexxim(Configurations, PyAedtBase):
                         for i, j in j["properties"].items()
                         if i in new_comp_params and j != new_comp_params and j != f'"{new_comp_params}"'
                     }
+                    if "buffer" in params:
+                        prop_value = params.pop("buffer")
+                        if prop_value:
+                            new_comp.parameters["buffer"] = prop_value
                     if params:
                         try:
                             values = [
