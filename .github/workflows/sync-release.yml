@@ -79,7 +79,7 @@ jobs:
           echo "::error::Merge conflicts detected between main and release/2.0. Manual intervention required."
           exit 1
 
-    create-sync-pr:
+  create-sync-pr:
     name: "Create sync PR (main to release/2.0)"
     needs: check-conflicts
     if: |
