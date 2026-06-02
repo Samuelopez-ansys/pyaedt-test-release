@@ -1,4 +1,4 @@
-name: Sync main → release/2.0
+name: Sync main to release/2.0
 
 on:
   schedule:
