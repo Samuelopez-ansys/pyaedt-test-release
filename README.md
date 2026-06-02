@@ -1,7 +1,7 @@
 <!-- -->
 <a name="readme-top"></a>
 <!--
-*** PyAEDT README
+*** PyAEDT README Samuel
 -->
 
 [![PyAEDT logo](https://raw.githubusercontent.com/ansys/pyaedt/main/doc/source/_static/logo.png)](https://aedt.docs.pyansys.com)
