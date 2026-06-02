@@ -79,7 +79,7 @@ jobs:
           echo "::error::Merge conflicts detected between main and release/2.0. Manual intervention required."
           exit 1
 
-  create-sync-pr:
+    create-sync-pr:
     name: "Create sync PR (main to release/2.0)"
     needs: check-conflicts
     if: |
@@ -98,6 +98,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create or update sync branch
+        id: sync
         run: |
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git config user.name  "github-actions[bot]"
@@ -107,11 +108,18 @@ jobs:
           BRANCH="auto/sync-main-to-release-2.0"
           git checkout -b "$BRANCH" origin/release/2.0
           echo 'src/ansys/aedt/core/__init__.py merge=ours' >> .gitattributes
-          git merge --no-ff origin/main -m "chore: sync main into release/2.0"
-          git checkout -- .gitattributes 2>/dev/null || true
-          git push origin "$BRANCH" --force
+          MERGE_OUTPUT=$(git merge --no-ff origin/main -m "chore: sync main into release/2.0" 2>&1) || true
+          if echo "$MERGE_OUTPUT" | grep -q "Already up to date"; then
+            echo "up_to_date=true" >> "$GITHUB_OUTPUT"
+            echo "Branches are already up to date. Skipping."
+          else
+            echo "up_to_date=false" >> "$GITHUB_OUTPUT"
+            git checkout -- .gitattributes 2>/dev/null || true
+            git push origin "$BRANCH" --force
+          fi
 
       - name: Open PR (skip if already exists)
+        if: steps.sync.outputs.up_to_date != 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -123,7 +131,6 @@ jobs:
               --base release/2.0 \
               --title "CHORE: sync main into release/2.0" \
               --body "Automated weekly sync of \`main\` into \`release/2.0\`. No conflicts detected."
-
           else
             echo "PR #$EXISTING already exists, skipping creation."
           fi
